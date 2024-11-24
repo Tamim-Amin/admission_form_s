@@ -1,29 +1,30 @@
 package admissionform;
-
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileWriter;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
-import javax.swing.table.DefaultTableModel;
 
 public class AdmissionForm extends JFrame implements ActionListener {
-    private JTextField nameField, fatherNameField, motherNameField, emailField, sscYearField, hscYearField, sscGpaField, hscGpaField, contactNumberField;
+    private JTextField nameField, fatherNameField, motherNameField, emailField, ageField, sscYearField, hscYearField,
+            sscGpaField, hscGpaField, contactNumberField;
     private JTextField presentAddressField, permanentAddressField;
     private JSpinner dobSpinner;
     private JButton submitButton, resetButton;
     private ButtonGroup genderGroup, religionGroup;
     private JCheckBox sameAsPresentAddressCheckBox;
     private JComboBox<String> departmentComboBox;
-    private JTable table;
+    private JTable dataTable;
     private DefaultTableModel tableModel;
 
     public AdmissionForm() {
         setTitle("Admission Form");
-        setSize(600, 800);
+        setSize(800, 900);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -32,7 +33,7 @@ public class AdmissionForm extends JFrame implements ActionListener {
         gbc.weightx = 1.0;
         gbc.anchor = GridBagConstraints.CENTER;
 
-        // Title Label at the top
+        // Title Label
         JLabel titleLabel = new JLabel("Metropolitan University");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 25));
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -43,51 +44,77 @@ public class AdmissionForm extends JFrame implements ActionListener {
         add(titleLabel, gbc);
 
         // Student Name Field
-        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 1;
         add(new JLabel("Student Name:"), gbc);
         nameField = new JTextField(20);
         gbc.gridx = 1;
         add(nameField, gbc);
 
         // Father's Name Field
-        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridx = 0;
+        gbc.gridy = 2;
         add(new JLabel("Father's Name:"), gbc);
         fatherNameField = new JTextField(20);
         gbc.gridx = 1;
         add(fatherNameField, gbc);
 
         // Mother's Name Field
-        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridx = 0;
+        gbc.gridy = 3;
         add(new JLabel("Mother's Name:"), gbc);
         motherNameField = new JTextField(20);
         gbc.gridx = 1;
         add(motherNameField, gbc);
 
         // Email Field
-        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.gridx = 0;
+        gbc.gridy = 4;
         add(new JLabel("Email:"), gbc);
         emailField = new JTextField(20);
         gbc.gridx = 1;
         add(emailField, gbc);
 
         // Contact Number Field
-        gbc.gridx = 0; gbc.gridy = 5;
+        gbc.gridx = 0;
+        gbc.gridy = 5;
         add(new JLabel("Contact Number:"), gbc);
         contactNumberField = new JTextField(20);
         gbc.gridx = 1;
         add(contactNumberField, gbc);
 
         // Date of Birth Field
-        gbc.gridx = 0; gbc.gridy = 6;
+        gbc.gridx = 0;
+        gbc.gridy = 6;
         add(new JLabel("Date of Birth:"), gbc);
         dobSpinner = new JSpinner(new SpinnerDateModel());
         dobSpinner.setEditor(new JSpinner.DateEditor(dobSpinner, "dd-MM-yyyy"));
+        dobSpinner.addChangeListener(e -> {
+            Date dob = (Date) dobSpinner.getValue();
+            Calendar birthCal = Calendar.getInstance();
+            birthCal.setTime(dob);
+            Calendar today = Calendar.getInstance();
+            int age = today.get(Calendar.YEAR) - birthCal.get(Calendar.YEAR);
+            if (today.get(Calendar.DAY_OF_YEAR) < birthCal.get(Calendar.DAY_OF_YEAR)) {
+                age--;
+            }
+            ageField.setText(String.valueOf(age));
+        });
         gbc.gridx = 1;
         add(dobSpinner, gbc);
 
+        // Age Field
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        add(new JLabel("Age:"), gbc);
+        ageField = new JTextField(5);
+        ageField.setEditable(false);
+        gbc.gridx = 1;
+        add(ageField, gbc);
         // Gender Panel
         JPanel genderPanel = new JPanel(new GridLayout(1, 3));
-        gbc.gridx = 0; gbc.gridy = 7;
+        gbc.gridx = 0;
+        gbc.gridy = 8;
         add(new JLabel("Gender:"), gbc);
         JRadioButton maleButton = new JRadioButton("Male");
         maleButton.setActionCommand("Male");
@@ -107,7 +134,8 @@ public class AdmissionForm extends JFrame implements ActionListener {
 
         // Religion Panel
         JPanel religionPanel = new JPanel(new GridLayout(1, 4));
-        gbc.gridx = 0; gbc.gridy = 8;
+        gbc.gridx = 0;
+        gbc.gridy = 9;
         add(new JLabel("Religion:"), gbc);
         JRadioButton christianityButton = new JRadioButton("Christianity");
         christianityButton.setActionCommand("Christianity");
@@ -130,34 +158,38 @@ public class AdmissionForm extends JFrame implements ActionListener {
         add(religionPanel, gbc);
 
         // SSC Year and GPA
-        gbc.gridx = 0; gbc.gridy = 9;
+        gbc.gridx = 0;
+        gbc.gridy = 10;
         add(new JLabel("SSC Year:"), gbc);
         sscYearField = new JTextField(6);
         gbc.gridx = 1;
         add(sscYearField, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 10;
+        gbc.gridx = 0;
+        gbc.gridy = 11;
         add(new JLabel("SSC GPA:"), gbc);
         sscGpaField = new JTextField(6);
         gbc.gridx = 1;
         add(sscGpaField, gbc);
 
         // HSC Year and GPA
-        gbc.gridx = 0; gbc.gridy = 11;
+        gbc.gridx = 0;
+        gbc.gridy = 12;
         add(new JLabel("HSC Year:"), gbc);
         hscYearField = new JTextField(6);
-        hscYearField.setEditable(false); // HSC Year will be calculated based on SSC Year
         gbc.gridx = 1;
         add(hscYearField, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 12;
+        gbc.gridx = 0;
+        gbc.gridy = 13;
         add(new JLabel("HSC GPA:"), gbc);
         hscGpaField = new JTextField(6);
         gbc.gridx = 1;
         add(hscGpaField, gbc);
 
         // Department Dropdown
-        gbc.gridx = 0; gbc.gridy = 13;
+        gbc.gridx = 0;
+        gbc.gridy = 14;
         add(new JLabel("Department:"), gbc);
         String[] departments = {
                 "Computer Science & Engineering",
@@ -173,21 +205,24 @@ public class AdmissionForm extends JFrame implements ActionListener {
         add(departmentComboBox, gbc);
 
         // Present Address
-        gbc.gridx = 0; gbc.gridy = 14;
+        gbc.gridx = 0;
+        gbc.gridy = 15;
         add(new JLabel("Present Address:"), gbc);
         presentAddressField = new JTextField(20);
         gbc.gridx = 1;
         add(presentAddressField, gbc);
 
         // Permanent Address
-        gbc.gridx = 0; gbc.gridy = 15;
+        gbc.gridx = 0;
+        gbc.gridy = 16;
         add(new JLabel("Permanent Address:"), gbc);
         permanentAddressField = new JTextField(20);
         gbc.gridx = 1;
         add(permanentAddressField, gbc);
 
         // Same as Present Address checkbox
-        gbc.gridx = 0; gbc.gridy = 16;
+        gbc.gridx = 0;
+        gbc.gridy = 17;
         sameAsPresentAddressCheckBox = new JCheckBox("Same as Present Address");
         sameAsPresentAddressCheckBox.addActionListener(e -> {
             if (sameAsPresentAddressCheckBox.isSelected()) {
@@ -202,7 +237,9 @@ public class AdmissionForm extends JFrame implements ActionListener {
         // Submit Button
         submitButton = new JButton("Submit");
         submitButton.addActionListener(this);
-        gbc.gridx = 0; gbc.gridy = 17; gbc.gridwidth = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 18;
+        gbc.gridwidth = 1;
         add(submitButton, gbc);
 
         // Reset Button
@@ -211,67 +248,89 @@ public class AdmissionForm extends JFrame implements ActionListener {
         gbc.gridx = 1;
         add(resetButton, gbc);
 
-        // JTable for displaying submitted data
-        tableModel = new DefaultTableModel();
-        tableModel.addColumn("Student Name");
-        tableModel.addColumn("Father's Name");
-        tableModel.addColumn("Mother's Name");
-        tableModel.addColumn("Email");
-        tableModel.addColumn("Date of Birth");
-        tableModel.addColumn("Gender");
-        tableModel.addColumn("Religion");
-        tableModel.addColumn("SSC Year");
-        tableModel.addColumn("HSC Year");
-        tableModel.addColumn("Department");
-        tableModel.addColumn("Present Address");
-        tableModel.addColumn("Permanent Address");
-
-        table = new JTable(tableModel);
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setPreferredSize(new Dimension(800, 200));
-        gbc.gridx = 0; gbc.gridy = 18; gbc.gridwidth = 2;
+        // Table to display form data
+        String[] columnNames = {
+                "Student Name", "Father's Name", "Mother's Name", "Email", "Contact Number",
+                "Date of Birth", "Age", "Gender", "Religion", "SSC Year", "SSC GPA",
+                "HSC Year", "HSC GPA", "Department", "Present Address", "Permanent Address"
+        };
+        tableModel = new DefaultTableModel(columnNames, 0);
+        dataTable = new JTable(tableModel);
+        JScrollPane scrollPane = new JScrollPane(dataTable);
+        gbc.gridx = 0;
+        gbc.gridy = 19;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1.0;
         add(scrollPane, gbc);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == submitButton) {
-            String name = nameField.getText();
-            String fatherName = fatherNameField.getText();
-            String motherName = motherNameField.getText();
-            String email = emailField.getText();
-            String contactNumber = contactNumberField.getText();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-            String dateOfBirth = dateFormat.format(dobSpinner.getValue());
-            String gender = genderGroup.getSelection().getActionCommand();
-            String religion = religionGroup.getSelection().getActionCommand();
-            String sscYear = sscYearField.getText();
-            try {
-                int sscYearInt = Integer.parseInt(sscYear);
-                int hscYear = sscYearInt + 2;
-                hscYearField.setText(String.valueOf(hscYear)); // Automatically calculate HSC year
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Invalid SSC year input", "Error", JOptionPane.ERROR_MESSAGE);
+        if (nameField.getText().isEmpty() || fatherNameField.getText().isEmpty() || motherNameField.getText().isEmpty()
+                ||
+                emailField.getText().isEmpty() || contactNumberField.getText().isEmpty() || ageField.getText().isEmpty()
+                ||
+                sscYearField.getText().isEmpty() || sscGpaField.getText().isEmpty() ||
+                hscYearField.getText().isEmpty() || hscGpaField.getText().isEmpty() ||
+                presentAddressField.getText().isEmpty() || permanentAddressField.getText().isEmpty() ||
+                genderGroup.getSelection() == null || religionGroup.getSelection() == null) {
+
+            JOptionPane.showMessageDialog(this, "Please fill in all required fields.");
+            return;
+        }
+
+        String email = emailField.getText();
+        if (!email.matches("^[a-zA-Z0-9_+&-]+(?:\\.[a-zA-Z0-9_+&-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid email address.");
+            return;
+        }
+
+        try {
+            int sscYear = Integer.parseInt(sscYearField.getText());
+            int hscYear = Integer.parseInt(hscYearField.getText());
+
+            if (hscYear - sscYear < 2) {
+                JOptionPane.showMessageDialog(this, "The gap between SSC and HSC years should be at least 2 years.");
                 return;
             }
-            String department = (String) departmentComboBox.getSelectedItem();
-            String presentAddress = presentAddressField.getText();
-            String permanentAddress = permanentAddressField.getText();
-
-            if (validateEmail(email)) {
-                tableModel.addRow(new Object[]{
-                        name, fatherName, motherName, email, dateOfBirth, gender, religion, sscYear,
-                        hscYearField.getText(), department, presentAddress, permanentAddress
-                });
-                resetForm();
-            } else {
-                JOptionPane.showMessageDialog(this, "Invalid email format!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Please enter valid year values for SSC and HSC.");
+            return;
         }
-    }
 
-    private boolean validateEmail(String email) {
-        return email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+        String[] rowData = {
+                nameField.getText(),
+                fatherNameField.getText(),
+                motherNameField.getText(),
+                emailField.getText(),
+                contactNumberField.getText(),
+                new SimpleDateFormat("dd-MM-yyyy").format(dobSpinner.getValue()),
+                ageField.getText(),
+                genderGroup.getSelection().getActionCommand(),
+                religionGroup.getSelection().getActionCommand(),
+                sscYearField.getText(),
+                sscGpaField.getText(),
+                hscYearField.getText(),
+                hscGpaField.getText(),
+                departmentComboBox.getSelectedItem().toString(),
+                presentAddressField.getText(),
+                permanentAddressField.getText()
+        };
+
+        tableModel.addRow(rowData);
+
+        try (FileWriter writer = new FileWriter("admission_form_data.txt", true)) {
+            for (String field : rowData) {
+                writer.write(field + "\t");
+            }
+            writer.write("\n");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error writing to file: " + ex.getMessage());
+        }
+
+        JOptionPane.showMessageDialog(this, "Form submitted successfully!");
+        resetForm();
     }
 
     private void resetForm() {
@@ -280,22 +339,21 @@ public class AdmissionForm extends JFrame implements ActionListener {
         motherNameField.setText("");
         emailField.setText("");
         contactNumberField.setText("");
+        ageField.setText("");
+        sscYearField.setText("");
+        hscYearField.setText("");
+        sscGpaField.setText("");
+        hscGpaField.setText("");
         presentAddressField.setText("");
         permanentAddressField.setText("");
         dobSpinner.setValue(new Date());
         genderGroup.clearSelection();
         religionGroup.clearSelection();
-        sscYearField.setText("");
-        sscGpaField.setText("");
-        hscGpaField.setText("");
         departmentComboBox.setSelectedIndex(0);
         sameAsPresentAddressCheckBox.setSelected(false);
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            AdmissionForm form = new AdmissionForm();
-            form.setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new AdmissionForm().setVisible(true));
     }
 }
